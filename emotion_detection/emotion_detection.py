@@ -54,6 +54,11 @@ def emotion_detector(text_to_analyze: str) -> dict[str, Any]:
 
 def _extract_scores(data: dict[str, Any]) -> dict[str, float]:
     """Extract emotion scores from the Watson response format."""
+    if not isinstance(data, dict):
+        raise EmotionDetectionError(
+            "The emotion service response was not a JSON object."
+        )
+
     candidates = []
     predictions = data.get("emotionPredictions")
     if isinstance(predictions, list) and predictions and isinstance(predictions[0], dict):
