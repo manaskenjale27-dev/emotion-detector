@@ -1,13 +1,26 @@
 #!/bin/bash
+# This script calculates simple interest given principal, annual rate of interest and time period in years.
+# Do not use this in production. Sample purpose only.
 
-read -p "Enter the principal amount: " principal
-read -p "Enter the annual rate of interest (in %): " rate
-read -p "Enter the time period (in years): " time
+# Author: Upkar Lidder (IBM)
+# Addtional Authors:
+# <your Github username>
 
-if ! [[ "$principal" =~ ^[0-9]+([.][0-9]+)?$ ]] || ! [[ "$rate" =~ ^[0-9]+([.][0-9]+)?$ ]] || ! [[ "$time" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
-  echo "Error: Please enter valid non-negative numbers."
-  exit 1
-fi
+# Input:
+# p, principal amount
+# t, time period in years
+# r, annual rate of interest
 
-simple_interest=$(awk -v p="$principal" -v r="$rate" -v t="$time" 'BEGIN { printf "%.2f", p*r*t/100 }')
-echo "Simple Interest: $simple_interest"
+# Output:
+# simple interest = p*t*r
+
+echo "Enter the principal:"
+read p
+echo "Enter rate of interest per year:"
+read r
+echo "Enter time period in years:"
+read t
+
+s=$(expr $p \* $t \* $r / 100)
+echo "The simple interest is: "
+echo $s
