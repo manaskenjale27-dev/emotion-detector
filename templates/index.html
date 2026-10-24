@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Emotion Detector</title>
+    <style>
+        :root { color-scheme: light; font-family: system-ui, -apple-system, sans-serif; }
+        body { margin: 0; background: #f4f7fb; color: #172033; }
+        main { max-width: 760px; margin: 6vh auto; padding: 2rem; }
+        .panel { background: white; border: 1px solid #dce3ee; border-radius: 16px; padding: 2rem; box-shadow: 0 12px 35px #17203312; }
+        h1 { margin-top: 0; }
+        p { line-height: 1.6; color: #516078; }
+        textarea { box-sizing: border-box; width: 100%; min-height: 150px; padding: 1rem; border: 1px solid #b8c4d6; border-radius: 10px; font: inherit; resize: vertical; }
+        button { margin-top: 1rem; border: 0; background: #2456d6; color: white; padding: .85rem 1.1rem; border-radius: 9px; font: inherit; font-weight: 650; cursor: pointer; }
+        button:disabled { opacity: .65; cursor: wait; }
+        #result { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; background: #f2f5fa; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .error { color: #a12828; }
+        .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .6rem; margin-top: .8rem; }
+        .score { padding: .8rem; background: white; border: 1px solid #dce3ee; border-radius: 8px; }
+        .score strong { display: block; text-transform: capitalize; }
+    </style>
+</head>
+<body>
+<main>
+    <section class="panel">
+        <h1>Emotion Detector</h1>
+        <p>Enter a sentence to analyze its anger, disgust, fear, joy, and sadness scores.</p>
+        <form id="emotion-form">
+            <label for="textToAnalyze"><strong>Text to analyze</strong></label>
+            <p><textarea id="textToAnalyze" name="textToAnalyze" placeholder="Example: I am glad this happened." required></textarea></p>
+            <button id="submit-button" type="submit">Analyze emotion</button>
+        </form>
+        <section id="result" aria-live="polite" hidden></section>
+    </section>
+</main>
+<script>
+const form = document.getElementById("emotion-form");
+const input = document.getElementById("textToAnalyze");
+const result = document.getElementById("result");
+const button = document.getElementById("submit-button");
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    result.hidden = false;
+    result.className = "";
+    result.textContent = "";
+    if (!input.value.trim()) {
+        result.className = "error";
+        result.textContent = "Please enter text to analyze.";
+        input.focus();
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Analyzing…";
+    result.textContent = "Contacting emotion service…";
+    try {
+        const response = await fetch("/emotionDetector", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+            body: new URLSearchParams({ textToAnalyze: input.value })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "The request could not be completed.");
+        }
+        result.textContent = "Dominant emotion: " + data.dominant_emotion;
+        const scores = document.createElement("div");
+        scores.className = "scores";
+        ["anger", "disgust", "fear", "joy", "sadness"].forEach((emotion) => {
+            const card = document.createElement("div");
+            card.className = "score";
+            const label = document.createElement("strong");
+            label.textContent = emotion;
+            const value = document.createElement("span");
+            value.textContent = Number(data[emotion]).toFixed(3);
+            card.append(label, value);
+            scores.append(card);
+        });
+        result.append(scores);
+    } catch (error) {
+        result.className = "error";
+        result.textContent = error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Analyze emotion";
+    }
+});
+</script>
+</body>
+</html>
