@@ -1,66 +1,87 @@
-"""Unit tests for the Emotion Detector."""
+"""Unit tests for the EmotionDetection application."""
 
+import json
 import unittest
 from unittest.mock import Mock, patch
 
-import requests
-
-from emotion_detection import EmotionDetectionError, emotion_detector
+from EmotionDetection.emotion_detection import emotion_detector
 
 
-class EmotionDetectorTests(unittest.TestCase):
-    """Tests input validation, response parsing, and service failures."""
+class TestEmotionDetector(unittest.TestCase):
+    """Test formatted scores, dominant emotions, and HTTP 400 handling."""
 
-    @patch("emotion_detection.emotion_detection.requests.post")
-    def test_returns_scores_and_dominant_emotion(self, post_mock: Mock) -> None:
-        post_mock.return_value = Mock(
-            status_code=200,
-            json=lambda: {
-                "emotionPredictions": [
-                    {
-                        "emotion": {
-                            "anger": 0.05,
-                            "disgust": 0.02,
-                            "fear": 0.03,
-                            "joy": 0.85,
-                            "sadness": 0.05,
-                        }
-                    }
-                ]
+    def make_response(self, scores, status_code=200):
+        response = Mock()
+        response.status_code = status_code
+        response.text = json.dumps(
+            {"emotionPredictions": [{"emotion": scores}]}
+        )
+        response.raise_for_status.return_value = None
+        return response
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_anger_is_dominant(self, post_mock):
+        post_mock.return_value = self.make_response({
+            "anger": 0.8, "disgust": 0.1, "fear": 0.05,
+            "joy": 0.02, "sadness": 0.03,
+        })
+        result = emotion_detector("I am angry")
+        self.assertEqual(result["dominant_emotion"], "anger")
+        self.assertEqual(set(result), {
+            "anger", "disgust", "fear", "joy", "sadness", "dominant_emotion"
+        })
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_disgust_is_dominant(self, post_mock):
+        post_mock.return_value = self.make_response({
+            "anger": 0.02, "disgust": 0.88, "fear": 0.03,
+            "joy": 0.02, "sadness": 0.05,
+        })
+        self.assertEqual(
+            emotion_detector("That is disgusting")["dominant_emotion"],
+            "disgust",
+        )
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_fear_is_dominant(self, post_mock):
+        post_mock.return_value = self.make_response({
+            "anger": 0.02, "disgust": 0.03, "fear": 0.88,
+            "joy": 0.02, "sadness": 0.05,
+        })
+        self.assertEqual(
+            emotion_detector("I am afraid")["dominant_emotion"], "fear"
+        )
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_joy_is_dominant(self, post_mock):
+        post_mock.return_value = self.make_response({
+            "anger": 0.02, "disgust": 0.03, "fear": 0.05,
+            "joy": 0.8, "sadness": 0.1,
+        })
+        self.assertEqual(
+            emotion_detector("I am happy")["dominant_emotion"], "joy"
+        )
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_sadness_is_dominant(self, post_mock):
+        post_mock.return_value = self.make_response({
+            "anger": 0.02, "disgust": 0.03, "fear": 0.05,
+            "joy": 0.1, "sadness": 0.8,
+        })
+        self.assertEqual(
+            emotion_detector("I am sad")["dominant_emotion"], "sadness"
+        )
+
+    @patch("EmotionDetection.emotion_detection.requests.post")
+    def test_http_400_returns_none_values(self, post_mock):
+        post_mock.return_value = Mock(status_code=400)
+        self.assertEqual(
+            emotion_detector("invalid input"),
+            {
+                "anger": None, "disgust": None, "fear": None,
+                "joy": None, "sadness": None, "dominant_emotion": None,
             },
         )
-        post_mock.return_value.raise_for_status.return_value = None
-
-        result = emotion_detector("I am glad this happened")
-
-        self.assertEqual(result["dominant_emotion"], "joy")
-        self.assertEqual(result["joy"], 0.85)
-        self.assertEqual(
-            set(result),
-            {"anger", "disgust", "fear", "joy", "sadness", "dominant_emotion"},
-        )
-
-    def test_rejects_blank_input(self) -> None:
-        with self.assertRaises(ValueError):
-            emotion_detector("   ")
-
-    @patch("emotion_detection.emotion_detection.requests.post")
-    def test_service_failure_is_reported(self, post_mock: Mock) -> None:
-        post_mock.side_effect = requests.ConnectionError("offline")
-
-        with self.assertRaises(EmotionDetectionError):
-            emotion_detector("I am happy")
-
-    @patch("emotion_detection.emotion_detection.requests.post")
-    def test_rejects_unexpected_response(self, post_mock: Mock) -> None:
-        post_mock.return_value = Mock(
-            status_code=200,
-            json=lambda: {"unexpected": {}},
-        )
-        post_mock.return_value.raise_for_status.return_value = None
-
-        with self.assertRaises(EmotionDetectionError):
-            emotion_detector("I am happy")
 
 
 if __name__ == "__main__":
