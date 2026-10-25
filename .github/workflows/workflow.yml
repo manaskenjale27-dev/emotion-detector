@@ -22,7 +22,5 @@ jobs:
           pip install -r requirements.txt flake8
       - name: Lint with flake8
         run: flake8 server.py emotion_detection test_emotion_detection.py --max-line-length=100
-      - name: Run unit tests with nose
-        run: |
-          pip install nose
-          nosetests -v
+      - name: Run unit tests with unittest
+        run: python -m unittest discover -s . -p 'test_*.py' -v
