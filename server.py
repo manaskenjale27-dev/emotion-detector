@@ -4,10 +4,7 @@ import subprocess
 
 from flask import Flask, render_template, request
 
-from EmotionDetection.emotion_detection import (
-    EmotionDetectionError,
-    emotion_detector,
-)
+from EmotionDetection.emotion_detection import emotion_detector
 
 app = Flask("Emotion Detector")
 
@@ -15,7 +12,7 @@ app = Flask("Emotion Detector")
 @app.route("/emotionDetector")
 def emotion_detector_function():
     """Analyze the submitted text and format emotion scores."""
-    text_to_analyze = request.args.get("textToAnalyze", "")
+    text_to_analyze = request.args.get("textToAnalyze")
     response = emotion_detector(text_to_analyze)
 
     if response["dominant_emotion"] is None:
