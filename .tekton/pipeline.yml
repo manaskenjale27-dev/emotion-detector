@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: emotion-detector-pipeline
+  name: ci-cd-final-project
 spec:
   workspaces:
     - name: source
@@ -21,6 +21,7 @@ spec:
         name: cleanup
       workspaces:
         - name: source
+          workspace: source
     - name: git-clone
       runAfter: [cleanup]
       taskRef:
@@ -32,18 +33,21 @@ spec:
           value: $(params.git-revision)
       workspaces:
         - name: source
+          workspace: source
     - name: flake8-eslint
       runAfter: [git-clone]
       taskRef:
         name: flake8-eslint
       workspaces:
         - name: source
+          workspace: source
     - name: nose-jest
       runAfter: [flake8-eslint]
       taskRef:
         name: nose-jest
       workspaces:
         - name: source
+          workspace: source
     - name: buildah
       runAfter: [nose-jest]
       taskRef:
@@ -53,6 +57,7 @@ spec:
           value: $(params.image)
       workspaces:
         - name: source
+          workspace: source
     - name: deploy
       runAfter: [buildah]
       taskRef:
