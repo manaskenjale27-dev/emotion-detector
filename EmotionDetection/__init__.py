@@ -1,5 +1,5 @@
-"""Emotion Detection package for the IBM final project."""
+"""EmotionDetection package for the final project."""
 
-from .emotion_detection import emotion_detector
+from . import emotion_detection
 
-__all__ = ["emotion_detector"]
+__all__ = ["emotion_detection"]
