@@ -20,11 +20,11 @@ kind: Task
 metadata:
   name: git-clone
 spec:
-  description: Clone the public Emotion Detector repository into the shared workspace.
+  description: Clone the CI/CD final project repository into the shared workspace.
   params:
     - name: url
       type: string
-      default: https://github.com/manaskenjale27-dev/emotion-detector.git
+      default: https://github.com/manaskenjale27-dev/ci-cd-final-project.git
     - name: revision
       type: string
       default: main
@@ -63,7 +63,7 @@ kind: Task
 metadata:
   name: nose-jest
 spec:
-  description: Run the project's Python unit tests (unittest-compatible test suite).
+  description: Run the Python unit tests with nose.
   workspaces:
     - name: source
   steps:
@@ -73,8 +73,8 @@ spec:
       script: |
         #!/bin/sh
         set -eu
-        python -m pip install --disable-pip-version-check -r requirements.txt
-        python -m unittest discover -s . -p 'test_*.py' -v
+        python -m pip install --disable-pip-version-check -r requirements.txt nose
+        nosetests -v
 
 ---
 apiVersion: tekton.dev/v1
