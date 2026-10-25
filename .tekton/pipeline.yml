@@ -8,7 +8,7 @@ spec:
   params:
     - name: git-url
       type: string
-      default: https://github.com/manaskenjale27-dev/emotion-detector.git
+      default: https://github.com/manaskenjale27-dev/ci-cd-final-project.git
     - name: git-revision
       type: string
       default: main
