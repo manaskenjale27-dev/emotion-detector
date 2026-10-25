@@ -1,0 +1,68 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: emotion-detector-pipeline
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: git-url
+      type: string
+      default: https://github.com/manaskenjale27-dev/emotion-detector.git
+    - name: git-revision
+      type: string
+      default: main
+    - name: image
+      type: string
+      default: image-registry.openshift-image-registry.svc:5000/$(context.taskRun.namespace)/emotion-detector:latest
+  tasks:
+    - name: cleanup
+      taskRef:
+        name: cleanup
+      workspaces:
+        - name: source
+    - name: git-clone
+      runAfter: [cleanup]
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+      workspaces:
+        - name: source
+    - name: flake8-eslint
+      runAfter: [git-clone]
+      taskRef:
+        name: test
+      workspaces:
+        - name: source
+    - name: nose-jest
+      runAfter: [flake8-eslint]
+      taskRef:
+        name: test
+      workspaces:
+        - name: source
+    - name: buildah
+      runAfter: [nose-jest]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+    - name: deploy
+      runAfter: [buildah]
+      taskRef:
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            oc apply -f openshift/deployment.yaml
+            oc apply -f openshift/service.yaml
+            oc rollout status deployment/emotion-detector --timeout=120s
+      workspaces:
+        - name: manifest-dir
+          workspace: source
