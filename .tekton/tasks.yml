@@ -42,9 +42,9 @@ spec:
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: test
+  name: flake8-eslint
 spec:
-  description: Run flake8 lint and Python unit tests.
+  description: Run Python flake8 linting.
   workspaces:
     - name: source
   steps:
@@ -56,6 +56,17 @@ spec:
         set -eu
         python -m pip install --disable-pip-version-check -r requirements.txt flake8
         flake8 server.py emotion_detection test_emotion_detection.py --max-line-length=100
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: nose-jest
+spec:
+  description: Run the project's Python unit tests (unittest-compatible test suite).
+  workspaces:
+    - name: source
+  steps:
     - name: nose
       image: python:3.11-slim
       workingDir: $(workspaces.source.path)
@@ -64,3 +75,45 @@ spec:
         set -eu
         python -m pip install --disable-pip-version-check -r requirements.txt
         python -m unittest discover -s . -p 'test_*.py' -v
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildah
+spec:
+  params:
+    - name: IMAGE
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: build
+      image: quay.io/buildah/stable:v1.36
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        privileged: true
+      script: |
+        #!/bin/sh
+        set -eu
+        buildah bud --format=docker -t "$(params.IMAGE)" .
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: openshift-client
+spec:
+  params:
+    - name: SCRIPT
+      type: string
+  workspaces:
+    - name: manifest-dir
+  steps:
+    - name: deploy
+      image: quay.io/openshift/origin-cli:4.16
+      workingDir: $(workspaces.manifest-dir.path)
+      script: |
+        #!/bin/sh
+        set -eu
+        $(params.SCRIPT)
