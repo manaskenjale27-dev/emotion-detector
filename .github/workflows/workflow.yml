@@ -22,18 +22,18 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt flake8
+          pip install -r requirements.txt flake8 nose
 
       - name: Initialize containers
         run: |
           echo "Python runtime initialized"
           python --version
 
-      - name: Linting
+      - name: Lint with flake8
         run: flake8 server.py emotion_detection test_emotion_detection.py --max-line-length=100
 
-      - name: Run unit tests
-        run: python -m unittest discover -s . -p 'test_*.py' -v
+      - name: Test with nose
+        run: nosetests -v
 
       - name: Post Setup Node.js
         if: always()
