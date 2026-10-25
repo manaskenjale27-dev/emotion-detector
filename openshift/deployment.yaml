@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: emotion-detector
-          image: image-registry.openshift-image-registry.svc:5000/$(NAMESPACE)/emotion-detector:latest
+          image: emotion-detector:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
