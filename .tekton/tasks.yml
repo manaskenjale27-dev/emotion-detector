@@ -18,9 +18,33 @@ spec:
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
+  name: git-clone
+spec:
+  description: Clone the public Emotion Detector repository into the shared workspace.
+  params:
+    - name: url
+      type: string
+      default: https://github.com/manaskenjale27-dev/emotion-detector.git
+    - name: revision
+      type: string
+      default: main
+  workspaces:
+    - name: source
+  steps:
+    - name: clone
+      image: alpine/git:2.45.2
+      script: |
+        #!/bin/sh
+        set -eu
+        git clone --depth 1 --branch "$(params.revision)" "$(params.url)" "$(workspaces.source.path)"
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
   name: test
 spec:
-  description: Lint and test the Python emotion detection application with flake8 and unittest.
+  description: Run flake8 lint and Python unit tests.
   workspaces:
     - name: source
   steps:
