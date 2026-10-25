@@ -73,8 +73,8 @@ spec:
       script: |
         #!/bin/sh
         set -eu
-        python -m pip install --disable-pip-version-check -r requirements.txt nose
-        nosetests -v
+        python -m pip install --disable-pip-version-check -r requirements.txt
+        python -m unittest discover -s . -p 'test_*.py' -v
 
 ---
 apiVersion: tekton.dev/v1
