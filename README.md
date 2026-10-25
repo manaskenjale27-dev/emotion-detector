@@ -1,8 +1,8 @@
-# Final Project
+# ci-cd-final-project
 
-IBM Applied AI final project: Emotion Detection using the Watson NLP service and a Flask web application.
+IBM CI/CD final project: a Flask-based Emotion Detection application used to demonstrate continuous integration and continuous delivery with GitHub Actions and Tekton.
 
-This application analyzes user-provided text and returns scores for anger, disgust, fear, joy, and sadness, together with the dominant emotion.
+The application analyzes user-provided text and returns emotion scores and the dominant emotion.
 
 ## Run locally
 
@@ -11,12 +11,12 @@ python3 -m pip install -r requirements.txt
 python3 server.py
 ```
 
-Open http://127.0.0.1:5000.
+## CI workflow
 
-## Validation
+The GitHub Actions workflow installs dependencies, runs flake8 linting, and runs the nose unit-test suite.
 
-GitHub Actions runs flake8 linting and the Python unit tests. Tekton task definitions for cleanup and lint/test are in `.tekton/tasks.yml`.
+## Tekton tasks
 
-## OpenShift note
+The `.tekton/tasks.yml` file defines cleanup, source cloning, linting, unit testing, image building, and OpenShift deployment tasks.
 
-OpenShift deployment and pipeline run evidence must be produced in the course's OpenShift cluster. Do not treat this repository file as proof that a pipeline or deployment has already run.
+OpenShift screenshots and successful PipelineRun evidence must come from the actual course OpenShift environment.
