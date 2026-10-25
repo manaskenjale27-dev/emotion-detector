@@ -12,7 +12,17 @@ class EmotionDetectionError(RuntimeError):
 
 
 def emotion_detector(text_to_analyze):
-    """Return the five emotion scores and dominant emotion."""
+    """Return five emotion scores and the dominant emotion."""
+    if not isinstance(text_to_analyze, str) or not text_to_analyze.strip():
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None,
+        }
+
     payload = {"raw_document": {"text": text_to_analyze}}
     response = requests.post(URL, json=payload, headers=HEADERS)
 
