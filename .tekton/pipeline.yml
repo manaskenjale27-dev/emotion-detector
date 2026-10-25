@@ -35,13 +35,13 @@ spec:
     - name: flake8-eslint
       runAfter: [git-clone]
       taskRef:
-        name: test
+        name: flake8-eslint
       workspaces:
         - name: source
     - name: nose-jest
       runAfter: [flake8-eslint]
       taskRef:
-        name: test
+        name: nose-jest
       workspaces:
         - name: source
     - name: buildah
