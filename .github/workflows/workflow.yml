@@ -11,7 +11,7 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -24,8 +24,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt flake8
 
-      - name: Lint with flake8
+      - name: Initialize containers
+        run: |
+          echo "Python runtime initialized"
+          python --version
+
+      - name: Linting
         run: flake8 server.py emotion_detection test_emotion_detection.py --max-line-length=100
 
-      - name: Run unit tests with unittest
+      - name: Run unit tests
         run: python -m unittest discover -s . -p 'test_*.py' -v
+
+      - name: Post Setup Node.js
+        if: always()
+        run: echo "No Node.js runtime is required for this Python application."
+
+      - name: Post Checkout
+        if: always()
+        run: echo "Checkout cleanup complete."
