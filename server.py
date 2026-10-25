@@ -1,5 +1,7 @@
 """Flask web server for the Emotion Detector."""
 
+import os
+
 from flask import Flask, jsonify, render_template, request
 
 from emotion_detection import EmotionDetectionError, emotion_detector
@@ -40,4 +42,4 @@ def not_found(_error):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=False)
