@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, render_template, request
 
-from EmotionDetection.emotion_detection import EmotionDetectionError, emotion_detector
+from EmotionDetection.emotion_detection import emotion_detector
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ def render_index_page():
 
 @app.route("/emotionDetector", methods=["GET", "POST"])
 def emotion_detector_function():
-    """Analyze submitted text and return the emotion scores as JSON."""
+    """Analyze supplied text and return emotion scores as JSON."""
     if request.method == "POST":
         text_to_analyze = request.form.get("textToAnalyze", "").strip()
     else:
@@ -24,14 +24,9 @@ def emotion_detector_function():
     if not text_to_analyze:
         return jsonify({"error": "Invalid text. Please enter text to analyze."}), 400
 
-    try:
-        result = emotion_detector(text_to_analyze)
-    except EmotionDetectionError:
-        app.logger.exception("Emotion detection service failed")
-        return jsonify({"error": "The emotion detection service is unavailable."}), 502
-
+    result = emotion_detector(text_to_analyze)
     if result["dominant_emotion"] is None:
-        return jsonify({"error": "Invalid text. Please try again."}), 400
+        return jsonify({"error": "Unable to analyze this text. Please try again."}), 400
 
     return jsonify(result)
 
