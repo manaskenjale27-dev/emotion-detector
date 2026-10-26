@@ -1,4 +1,4 @@
-import json
+"""Emotion detection client for the Watson NLP service."""
 
 import requests
 
@@ -8,12 +8,8 @@ HEADERS = {
 }
 
 
-class EmotionDetectionError(RuntimeError):
-    """Raised when the emotion detection service fails."""
-
-
 def emotion_detector(text_to_analyze):
-    """Return five emotion scores and the dominant emotion."""
+    """Return emotion scores and the dominant emotion for the supplied text."""
     empty_result = {
         "anger": None,
         "disgust": None,
@@ -28,17 +24,16 @@ def emotion_detector(text_to_analyze):
 
     payload = {"raw_document": {"text": text_to_analyze}}
     try:
-        response = requests.post(URL, json=payload, headers=HEADERS)
-    except requests.RequestException as exc:
-        raise EmotionDetectionError("The emotion service request failed.") from exc
+        response = requests.post(URL, json=payload, headers=HEADERS, timeout=20)
+    except requests.RequestException:
+        return empty_result.copy()
 
     if response.status_code == 400:
         return empty_result.copy()
 
     try:
         response.raise_for_status()
-        data = json.loads(response.text)
-        emotions = data["emotionPredictions"][0]["emotion"]
+        emotions = response.json()["emotionPredictions"][0]["emotion"]
         dominant_emotion = max(emotions, key=emotions.get)
         return {
             "anger": emotions["anger"],
@@ -48,5 +43,5 @@ def emotion_detector(text_to_analyze):
             "sadness": emotions["sadness"],
             "dominant_emotion": dominant_emotion,
         }
-    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as exc:
-        raise EmotionDetectionError("The emotion service returned an invalid response.") from exc
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
+        return empty_result.copy()
