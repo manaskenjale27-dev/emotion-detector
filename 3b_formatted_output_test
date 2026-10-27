@@ -1,0 +1,6 @@
+This file records the command to run for Task 3 Activity 2.
+
+Run from the repository root:
+python3 -c 'from EmotionDetection.emotion_detection import emotion_detector; print(emotion_detector("I am really mad about this"))'
+
+Paste the actual terminal output from a successful call below. The output must contain numerical scores for anger, disgust, fear, joy, sadness and the dominant_emotion key. Do not replace scores with made-up values.
