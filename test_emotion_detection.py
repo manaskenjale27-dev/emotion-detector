@@ -13,9 +13,9 @@ class TestEmotionDetector(unittest.TestCase):
     def make_response(self, scores, status_code=200):
         response = Mock()
         response.status_code = status_code
-        response.text = json.dumps(
-            {"emotionPredictions": [{"emotion": scores}]}
-        )
+        response.json.return_value = {
+            "emotionPredictions": [{"emotion": scores}]
+        }
         response.raise_for_status.return_value = None
         return response
 
